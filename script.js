@@ -1,18 +1,24 @@
 /* ============================================================
-   LOGIKA UTAMA FLASHCARD (dengan fitur Acak yang diperbaiki)
+   LOGIKA UTAMA FLASHCARD — mendukung opsi teks & opsi gambar (SVG)
    ============================================================ */
 
 const flashcardsData = {
   tiu: soalTIU,
+  tiuFigural: soalTIUFigural,
   twk: soalTWK,
   tkp: soalTKP,
   mixed: soalCampuran
 };
 
-// Update jumlah soal di menu
-document.getElementById('countTiu').textContent = soalTIU.length;
-document.getElementById('countTwk').textContent = soalTWK.length;
-document.getElementById('countTkp').textContent = soalTKP.length;
+// ---------- Update jumlah soal di menu ----------
+const _setCount = (id, val) => {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+};
+_setCount('countTiu', soalTIU.length);
+_setCount('countTiuFigural', soalTIUFigural.length);
+_setCount('countTwk', soalTWK.length);
+_setCount('countTkp', soalTKP.length);
 
 // ---------- STATE ----------
 let currentCategory = 'tiu';
@@ -23,6 +29,7 @@ let answered = false;
 // ---------- DOM ----------
 const card = document.getElementById('flashcard');
 const questionText = document.getElementById('questionText');
+const framesContainer = document.getElementById('framesContainer');
 const optionsContainer = document.getElementById('optionsContainer');
 const answerText = document.getElementById('answerText');
 const explanationText = document.getElementById('explanationText');
@@ -40,7 +47,7 @@ const formulaBox = document.getElementById('formulaBox');
 const keywordBox = document.getElementById('keywordBox');
 const frontHint = document.getElementById('frontHint');
 
-// ---------- UTIL: Fisher–Yates shuffle ----------
+// ---------- UTIL ----------
 function shuffleArray(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -50,39 +57,99 @@ function shuffleArray(arr) {
   return a;
 }
 
-// ---------- RENDER ----------
+const LABEL = { tiu: 'TIU', tiuFigural: 'TIU FIGURAL', twk: 'TWK', tkp: 'TKP', mixed: 'CAMPURAN' };
+
+// Deteksi apakah soal ini bertipe figural
+function isFiguralItem(item) {
+  return (
+    Array.isArray(item.frames) &&
+    Array.isArray(item.options) &&
+    item.options.length > 0 &&
+    typeof item.options[0] === 'object' &&
+    item.options[0] !== null &&
+    'svg' in item.options[0]
+  );
+}
+
+// ---------- RENDER: FRAME (khusus figural) ----------
+function renderFrames(item) {
+  if (!isFiguralItem(item)) {
+    framesContainer.innerHTML = '';
+    framesContainer.style.display = 'none';
+    return;
+  }
+  framesContainer.style.display = 'flex';
+  let html = '';
+  item.frames.forEach(svg => {
+    html += `<div class="frame-item">${svg}</div>`;
+  });
+  html += `<div class="frame-item is-question">?</div>`;
+  framesContainer.innerHTML = html;
+}
+
+// ---------- RENDER: OPSI (teks atau SVG) ----------
+function renderOptions(item) {
+  optionsContainer.innerHTML = '';
+  const letters = ['A', 'B', 'C', 'D', 'E'];
+
+  if (isFiguralItem(item)) {
+    // Opsi figural: setiap item.options[i] = { value, svg }
+    item.options.forEach((opt, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn has-svg';
+      btn.type = 'button';
+      btn.dataset.value = opt.value;
+      btn.innerHTML = `<span class="opt-letter">${letters[idx]}</span>${opt.svg}`;
+      btn.addEventListener('click', () => handleAnswer(btn, opt.value, item));
+      optionsContainer.appendChild(btn);
+    });
+  } else {
+    // Opsi teks biasa
+    item.options.forEach((opt, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.type = 'button';
+      btn.dataset.value = opt;
+      btn.innerHTML = `<span class="opt-letter">${letters[idx]}</span><span>${opt}</span>`;
+      btn.addEventListener('click', () => handleAnswer(btn, opt, item));
+      optionsContainer.appendChild(btn);
+    });
+  }
+}
+
+// ---------- RENDER UTAMA ----------
 function updateCardDisplay() {
   const item = currentDeck[currentIndex];
-  if (!item) return;
+  if (!item) {
+    questionText.textContent = 'Tidak ada soal di kategori ini.';
+    optionsContainer.innerHTML = '';
+    framesContainer.innerHTML = '';
+    card.classList.remove('is-figural');
+    return;
+  }
 
-  const cat = currentCategory;
-  const badgeLabel = cat === 'mixed' ? 'CAMPURAN' : cat.toUpperCase();
+  card.classList.toggle('is-figural', isFiguralItem(item));
+
+  const badgeLabel = LABEL[currentCategory] || currentCategory.toUpperCase();
   categoryBadge.textContent = badgeLabel;
   backBadge.textContent = badgeLabel;
 
   questionText.textContent = item.question || '—';
 
-  // Render 3 opsi (A, B, C)
-  optionsContainer.innerHTML = '';
-  const letters = ['A', 'B', 'C'];
-  item.options.forEach((opt, idx) => {
-    const btn = document.createElement('button');
-    btn.className = 'option-btn';
-    btn.type = 'button';
-    btn.innerHTML = `<span class="opt-letter">${letters[idx]}</span><span>${opt}</span>`;
-    btn.dataset.value = opt;
-    btn.addEventListener('click', () => handleAnswer(btn, opt, item));
-    optionsContainer.appendChild(btn);
-  });
+  renderFrames(item);
+  renderOptions(item);
 
   answered = false;
   card.classList.remove('flipped');
   frontHint.textContent = 'Pilih salah satu jawaban di atas';
 
-  answerText.textContent = 'Jawaban: ' + (item.answer || item.correctValue || '—');
+  // Back side
+  const jawabanTampil = isFiguralItem(item)
+    ? 'Lihat pada gambar jawaban yang disorot hijau'
+    : 'Jawaban: ' + (item.answer || item.correctValue || '—');
+  answerText.textContent = jawabanTampil;
   explanationText.textContent = item.explanation || 'Tidak ada penjelasan.';
 
-  // Rumus cepat (TIU)
   if (item.formula) {
     formulaText.textContent = item.formula;
     formulaBox.style.display = 'flex';
@@ -90,7 +157,6 @@ function updateCardDisplay() {
     formulaBox.style.display = 'none';
   }
 
-  // Kata kunci (TKP)
   if (item.keyword) {
     keywordText.textContent = item.keyword;
     keywordBox.style.display = 'flex';
@@ -110,22 +176,23 @@ function handleAnswer(clickedBtn, chosenValue, item) {
   answered = true;
 
   const correctValue = String(item.correctValue);
+  const chosen = String(chosenValue);
   const buttons = optionsContainer.querySelectorAll('.option-btn');
 
   buttons.forEach(btn => {
     const val = String(btn.dataset.value);
     if (val === correctValue) {
       btn.classList.add('correct');
-    } else if (btn === clickedBtn) {
+    } else if (btn === clickedBtn && val !== correctValue) {
       btn.classList.add('wrong');
     }
     btn.disabled = true;
   });
 
-  if (String(chosenValue) === correctValue) {
+  if (chosen === correctValue) {
     frontHint.textContent = '✅ Jawaban benar! Klik "Lihat Jawaban" untuk pembahasan.';
   } else {
-    frontHint.textContent = `❌ Salah. Jawaban benar: ${correctValue}. Klik "Lihat Jawaban".`;
+    frontHint.textContent = '❌ Jawaban salah. Jawaban benar disorot hijau. Klik "Lihat Jawaban".';
   }
 
   setTimeout(() => card.classList.add('flipped'), 700);
@@ -134,8 +201,8 @@ function handleAnswer(clickedBtn, chosenValue, item) {
 // ---------- KATEGORI ----------
 function loadCategory(category) {
   currentCategory = category;
-  // Acak deck saat pertama kali dimuat agar variatif
-  currentDeck = shuffleArray(flashcardsData[category]);
+  const deck = flashcardsData[category] || [];
+  currentDeck = shuffleArray(deck);
   currentIndex = 0;
   answered = false;
 
@@ -166,15 +233,13 @@ nextBtn.addEventListener('click', () => {
 
 flipBtn.addEventListener('click', () => card.classList.toggle('flipped'));
 
-// ---------- FITUR ACAK (DIPERBAIKI) ----------
-// Sekarang: acak seluruh deck -> reset ke kartu pertama -> render ulang
-// Efeknya user melihat kartu acak baru setiap kali tombol Acak diklik.
+// ---------- ACAK ----------
 shuffleBtn.addEventListener('click', () => {
+  if (currentDeck.length === 0) return;
   currentDeck = shuffleArray(currentDeck);
   currentIndex = 0;
   answered = false;
   updateCardDisplay();
-  // Feedback singkat
   frontHint.textContent = '🎲 Soal telah diacak. Mulai dari kartu pertama.';
 });
 
@@ -193,9 +258,10 @@ window.addEventListener('keydown', (e) => {
     flipBtn.click();
   }
   if (e.key === '1') loadCategory('tiu');
-  if (e.key === '2') loadCategory('twk');
-  if (e.key === '3') loadCategory('tkp');
-  if (e.key === '4') loadCategory('mixed');
+  if (e.key === '2') loadCategory('tiuFigural');
+  if (e.key === '3') loadCategory('twk');
+  if (e.key === '4') loadCategory('tkp');
+  if (e.key === '5') loadCategory('mixed');
   if (e.key.toLowerCase() === 'r') shuffleBtn.click();
 });
 
@@ -203,6 +269,7 @@ window.addEventListener('keydown', (e) => {
 loadCategory('tiu');
 console.log(
   '✅ CPNS Flashcard siap. TIU:', soalTIU.length,
+  '| TIU Figural:', soalTIUFigural.length,
   '| TWK:', soalTWK.length,
   '| TKP:', soalTKP.length,
   '| Campuran:', soalCampuran.length

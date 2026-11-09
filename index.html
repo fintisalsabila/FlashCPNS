@@ -3,22 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CPNS Flashcard · TIU / TWK / TKP</title>
-  <link rel="stylesheet" href="style.css">
+  <title>CPNS Flashcard · TIU / TWK / TKP / Figural</title>
 
   <link rel="icon" type="image/x-icon" href="assets/endmin.ico">
   <link rel="shortcut icon" href="assets/endmin.ico">
+
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="app-header">
     <h1>📚 CPNS Flashcard</h1>
-    <p class="subhead">TIU · TWK · TKP · Campuran</p>
+    <p class="subhead">TIU · TIU Figural · TWK · TKP · Campuran</p>
   </header>
 
   <main class="container">
     <nav class="menu">
       <button class="menu-btn active" data-category="tiu">🧠 TIU <span class="count" id="countTiu"></span></button>
-      <button class="menu-btn" data-category="twk">🇮🇩 TWK <span class="count" id="countTwk"></span></button>
+      <button class="menu-btn" data-category="tiuFigural">🖼️ TIU Figural <span class="count" id="countTiuFigural"></span></button>
+      <button class="menu-btn" data-category="twk">🛡️ TWK <span class="count" id="countTwk"></span></button>
       <button class="menu-btn" data-category="tkp">⭐ TKP <span class="count" id="countTkp"></span></button>
       <button class="menu-btn" data-category="mixed">🔀 Campuran</button>
     </nav>
@@ -29,6 +31,7 @@
           <div class="card-front">
             <span class="badge" id="categoryBadge">TIU</span>
             <p class="question" id="questionText">Loading question...</p>
+            <div class="frames" id="framesContainer"></div>
             <div class="options" id="optionsContainer"></div>
             <div class="hint" id="frontHint">Pilih salah satu jawaban di atas</div>
           </div>
@@ -69,19 +72,18 @@
     </section>
   </main>
 
-<footer class="app-footer">
-    <p>Klik opsi jawaban untuk melihat pembahasan · Latihan CPNS interaktif</p>
-  <p>For personal study use only.</p>
+  <footer class="app-footer">
+    <p>For personal study use only · Latihan CPNS interaktif</p>
   <p class="credit">
     Made by
     <a href="https://www.instagram.com/fintisalsabila?obrf=eTRsenQxNzRpOXk4"
        target="_blank"
        rel="noopener noreferrer">Finti Salsabila</a>
   </p>  
-</footer>
+  </footer>
 
-  <!-- File soal (urutan penting: tiu, twk, tkp, campuran) -->
   <script src="soal-tiu.js"></script>
+  <script src="soal-tiu-figural.js"></script>
   <script src="soal-twk.js"></script>
   <script src="soal-tkp.js"></script>
   <script src="soal-campuran.js"></script>

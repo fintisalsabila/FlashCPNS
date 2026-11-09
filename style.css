@@ -316,3 +316,173 @@ body::before {
   .nav-btn { padding: 0.55rem 0.9rem; font-size: 0.78rem; }
   .action-btn { padding: 0.6rem 1.1rem; font-size: 0.82rem; }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ============================================================
+   KHUSUS TIU FIGURAL — kartu memanjang ke bawah, opsi 2×2
+   ============================================================ */
+
+/* Kartu figural lebih TINGGI (bukan lebih lebar) */
+.card.is-figural .card-inner {
+  min-height: 780px;
+}
+.card.is-figural .card-front,
+.card.is-figural .card-back {
+  min-height: 780px;
+  padding: 1.4rem 1.2rem;
+}
+
+/* Frame pola: tetap horizontal, wrap kalau sempit, ukuran sedang */
+.card.is-figural .frames {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: center;
+  align-items: center;
+  margin: 0.4rem 0 1.1rem;
+  width: 100%;
+}
+.card.is-figural .frame-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 110px;
+  height: 110px;
+  background: #fff;
+  border: 1.5px solid #c9dbf0;
+  border-radius: 0.9rem;
+  padding: 6px;
+  box-shadow: 0 4px 10px -6px rgba(0, 20, 40, 0.2);
+}
+.card.is-figural .frame-item svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.card.is-figural .frame-item.is-question {
+  border-style: dashed;
+  border-color: #1f4b7a;
+  background: #eef4fb;
+  color: #1f4b7a;
+  font-weight: 800;
+  font-size: 2rem;
+}
+
+/* Opsi jawaban: 2 kolom × 2 baris (2 atas, 2 bawah) */
+.card.is-figural .options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 0.8rem;
+  width: 100%;
+  margin-top: 0.2rem;
+}
+.card.is-figural .option-btn.has-svg {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 0.5rem;
+  min-height: 150px;
+  border-radius: 1rem;
+}
+.card.is-figural .option-btn.has-svg svg {
+  width: 100%;
+  max-width: 130px;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  display: block;
+}
+.card.is-figural .option-btn.has-svg .opt-letter {
+  position: static;
+  transform: none;
+  margin-bottom: 0.3rem;
+  width: 1.7rem;
+  height: 1.7rem;
+  font-size: 0.82rem;
+}
+
+.card.is-figural .hint {
+  margin-top: 0.8rem;
+}
+
+/* Responsif: layar sedang */
+@media (max-width: 700px) {
+  .card.is-figural .card-inner,
+  .card.is-figural .card-front,
+  .card.is-figural .card-back {
+    min-height: 720px;
+  }
+  .card.is-figural .frame-item {
+    width: 90px;
+    height: 90px;
+  }
+  .card.is-figural .frame-item.is-question {
+    font-size: 1.6rem;
+  }
+  .card.is-figural .option-btn.has-svg {
+    min-height: 130px;
+  }
+}
+
+/* Responsif: layar sempit */
+@media (max-width: 480px) {
+  .card.is-figural .card-inner,
+  .card.is-figural .card-front,
+  .card.is-figural .card-back {
+    min-height: 700px;
+  }
+  .card.is-figural .frames { gap: 0.45rem; }
+  .card.is-figural .frame-item {
+    width: 72px;
+    height: 72px;
+  }
+  .card.is-figural .options {
+    gap: 0.55rem;
+  }
+  .card.is-figural .option-btn.has-svg {
+    min-height: 110px;
+    padding: 0.45rem 0.3rem;
+  }
+}
+
+
+
+
+.app-footer .credit {
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+  color: #4b637b;
+}
+
+.app-footer .credit a {
+  color: #1f4b7a;
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px dashed #1f4b7a;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.app-footer .credit a:hover {
+  color: #0b2b4a;
+  border-bottom-color: #0b2b4a;
+}
