@@ -1,11 +1,11 @@
 /* ============================================================
-   SOAL TIU FIGURAL (SERIAL) — 500 soal (3 opsi: A, B, C)
+   SOAL TIU FIGURAL (SERIAL) — 500 soal (4 opsi: A, B, C, D)
    Semua gambar dibuat dari kode (SVG string), tanpa file gambar.
    Muat file ini SEBELUM script.js.
    ============================================================ */
 
 const _HURUF = ['A', 'B', 'C', 'D'];
-const _INSTRUKSI = 'Pilihlah gambar (A), (B), atau (C) untuk melanjutkan pola gambar yang tersedia!';
+const _INSTRUKSI = 'Pilihlah gambar (A), (B), (C), atau (D) untuk melanjutkan pola gambar yang tersedia!';
 const _INK = '#222';
 
 /* ---------- Helper umum ---------- */
@@ -23,15 +23,17 @@ const _key = (s) => JSON.stringify(s);
 const _mod360 = (a) => ((a % 360) + 360) % 360;
 const _range = (a, b) => { const r = []; for (let k = a; k <= b; k++) r.push(k); return r; };
 
+// Bikin 4 opsi (1 benar + 3 pengecoh unik). Nama _shuffle3 dipertahankan
+// karena dipakai juga di tipe lain, fungsinya generic shuffle.
 function _build4Options(correct, distractors) {
   const seen = new Set([_key(correct)]);
   const opts = [correct];
   for (const d of distractors) {
-    if (opts.length >= 3) break;
+    if (opts.length >= 4) break;
     const k = _key(d);
     if (!seen.has(k)) { seen.add(k); opts.push(d); }
   }
-  if (opts.length < 3) throw new Error('Pengecoh unik kurang untuk: ' + _key(correct));
+  if (opts.length < 4) throw new Error('Pengecoh unik kurang untuk: ' + _key(correct));
   return _shuffle3(opts);
 }
 
@@ -84,7 +86,9 @@ function _pushSoal({ type, frames, correct, distractors, render, explanation, fo
   });
 }
 
-/* ---------- Tipe 1: Rotasi (100 soal) ---------- */
+/* ============================================================
+   Tipe 1: Rotasi panah (50 soal)
+   ============================================================ */
 const _arrowVariants = [
   `<circle cx="50" cy="84" r="5" fill="${_INK}"/>`,
   `<line x1="40" y1="68" x2="60" y2="68" stroke="${_INK}" stroke-width="4"/>`,
@@ -98,10 +102,10 @@ function _arrowSvg(angle, v) {
   );
 }
 const _steps = [45, 90, 135, -45, -90, -135];
-for (let i = 0; i < 100; i++) {
+for (let i = 0; i < 50; i++) {
   const start = 45 * (i % 8);
   const step = _steps[Math.floor(i / 8) % 6];
-  const v = Math.floor(i / 48) % 3;
+  const v = Math.floor(i / 24) % 3;
   const at = t => _mod360(start + t * step);
   const arah = step > 0 ? 'searah' : 'berlawanan';
   _pushSoal({
@@ -118,8 +122,10 @@ for (let i = 0; i < 100; i++) {
   });
 }
 
-/* ---------- Tipe 2: Titik pada sudut (100 soal) ---------- */
-for (let i = 0; i < 100; i++) {
+/* ============================================================
+   Tipe 2: Titik pada sudut bangun (50 soal)
+   ============================================================ */
+for (let i = 0; i < 50; i++) {
   const N = 4 + (i % 3);
   const mode = Math.floor(i / 3) % 2;
   const dir = Math.floor(i / 6) % 2 ? -1 : 1;
@@ -159,9 +165,11 @@ for (let i = 0; i < 100; i++) {
   }
 }
 
-/* ---------- Tipe 3: Bangun bersarang berkurang (100 soal) ---------- */
+/* ============================================================
+   Tipe 3: Bangun bersarang berkurang (50 soal)
+   ============================================================ */
 const _pool = ['circle', 'square', 'diamond', 'triangle', 'hexagon', 'pentagon'];
-for (let i = 0; i < 100; i++) {
+for (let i = 0; i < 50; i++) {
   const k = 4 + (i % 3);
   const off = Math.floor(i / 3) % 6;
   const kinds = _range(0, k - 1).map(j => _pool[(off + j) % 6]);
@@ -180,10 +188,12 @@ for (let i = 0; i < 100; i++) {
   });
 }
 
-/* ---------- Tipe 4: Isi baris (100 soal) ---------- */
+/* ============================================================
+   Tipe 4: Isi baris bertambah/berkurang/tetap (50 soal)
+   ============================================================ */
 const _rowPool = ['circle', 'diamond', 'square'];
 const _rowName = ['atas', 'tengah', 'bawah'];
-for (let i = 0; i < 100; i++) {
+for (let i = 0; i < 50; i++) {
   const inc = i % 3;
   const dec = (inc + 1 + (Math.floor(i / 3) % 2)) % 3;
   const stat = 3 - inc - dec;
@@ -216,8 +226,10 @@ for (let i = 0; i < 100; i++) {
   });
 }
 
-/* ---------- Tipe 5: Sisi bangun bertambah + warna selang-seling (100 soal) ---------- */
-for (let i = 0; i < 100; i++) {
+/* ============================================================
+   Tipe 5: Sisi bangun bertambah + warna selang-seling (50 soal)
+   ============================================================ */
+for (let i = 0; i < 50; i++) {
   const s0 = 3 + (i % 4);
   const f0 = Math.floor(i / 4) % 2;
   const rot = [-90, 90, 0][Math.floor(i / 8) % 3];
@@ -239,6 +251,214 @@ for (let i = 0; i < 100; i++) {
     render,
     explanation: `Jumlah sisi bertambah 1 tiap gambar (${s0}, ${s0 + 1}, ${s0 + 2}) dan warna bangun dalam berganti hitam–putih. Berikutnya: ${c.n} sisi, bangun dalam ${c.f ? 'hitam' : 'putih'}.`,
     formula: `Sisi: Un = U1 + (n−1); warna: berganti tiap gambar`
+  });
+}
+
+/* ============================================================
+   Tipe 6: Bangun bergeser posisi (50 soal) — BARU
+   Satu bangun kecil bergerak mengelilingi kotak luar.
+   ============================================================ */
+const _posGrid = [
+  [20, 20], [50, 20], [80, 20],
+  [80, 50], [80, 80], [50, 80],
+  [20, 80], [20, 50]
+];
+const _posLabels = ['kiri-atas', 'atas-tengah', 'kanan-atas',
+                    'kanan-tengah', 'kanan-bawah', 'bawah-tengah',
+                    'kiri-bawah', 'kiri-tengah'];
+const _bangunKecil = ['circle', 'triangle', 'square', 'diamond'];
+
+for (let i = 0; i < 50; i++) {
+  const dir = Math.floor(i / 4) % 2 ? -1 : 1;
+  const s0 = i % 8;
+  const kind = _bangunKecil[Math.floor(i / 8) % 4];
+  const bigKind = ['square', 'circle', 'hexagon', 'pentagon'][Math.floor(i / 16) % 4];
+  const pos = t => (((s0 + dir * t) % 8) + 8) % 8;
+  const render = idx => {
+    const [x, y] = _posGrid[idx];
+    return _svg(_shape(bigKind, 50, 50, 40, '#fff') +
+      _shape(kind, x, y, 8, _INK));
+  };
+  const arah = dir > 0 ? 'searah' : 'berlawanan';
+  const c3 = pos(3);
+  _pushSoal({
+    type: 'geser-posisi',
+    frames: [pos(0), pos(1), pos(2)],
+    correct: c3,
+    distractors: [
+      pos(2), pos(4), pos(-1), pos(5),
+      (c3 + 2) % 8, (c3 + 6) % 8
+    ],
+    render,
+    explanation: `Bangun kecil bergeser 1 posisi ${arah} jarum jam di sekeliling bangun besar: ${_posLabels[pos(0)]} → ${_posLabels[pos(1)]} → ${_posLabels[pos(2)]} → ${_posLabels[c3]}.`,
+    formula: `Posisi: pn = (p0 ± n) mod 8`
+  });
+}
+
+/* ============================================================
+   Tipe 7: Cermin / refleksi horizontal atau vertikal (50 soal) — BARU
+   ============================================================ */
+function _asymSvg(kind, mirror) {
+  // Bangun asimetris: segitiga siku + titik penanda
+  let inner = '';
+  if (kind === 'L') {
+    inner = `<polygon points="30,30 30,70 70,70" fill="#fff" stroke="${_INK}" stroke-width="3"/>` +
+            `<circle cx="30" cy="30" r="4" fill="${_INK}"/>`;
+  } else if (kind === 'arrow') {
+    inner = `<polygon points="30,50 60,30 60,40 70,40 70,60 60,60 60,70" fill="#fff" stroke="${_INK}" stroke-width="2"/>` +
+            `<circle cx="40" cy="50" r="4" fill="${_INK}"/>`;
+  } else if (kind === 'F') {
+    inner = `<rect x="30" y="30" width="10" height="40" fill="#fff" stroke="${_INK}" stroke-width="2"/>` +
+            `<rect x="40" y="30" width="20" height="10" fill="#fff" stroke="${_INK}" stroke-width="2"/>` +
+            `<rect x="40" y="45" width="15" height="10" fill="#fff" stroke="${_INK}" stroke-width="2"/>` +
+            `<circle cx="35" cy="65" r="4" fill="${_INK}"/>`;
+  } else { // 'flag'
+    inner = `<line x1="35" y1="25" x2="35" y2="75" stroke="${_INK}" stroke-width="3"/>` +
+            `<polygon points="35,25 75,35 35,45" fill="#fff" stroke="${_INK}" stroke-width="2"/>` +
+            `<circle cx="65" cy="65" r="4" fill="${_INK}"/>`;
+  }
+  let transform = '';
+  if (mirror === 'h') transform = `transform="translate(100,0) scale(-1,1)"`;
+  if (mirror === 'v') transform = `transform="translate(0,100) scale(1,-1)"`;
+  return _svg(`<g ${transform}>${inner}</g>`);
+}
+
+const _mirrorKinds = ['L', 'arrow', 'F', 'flag'];
+for (let i = 0; i < 50; i++) {
+  const kind = _mirrorKinds[i % 4];
+  const axis = Math.floor(i / 4) % 2 === 0 ? 'h' : 'v';
+  const render = st => _asymSvg(kind, st.mirror);
+  const correct = { mirror: axis };
+  const wrongAxis = axis === 'h' ? 'v' : 'h';
+  const distractorStates = [
+    { mirror: null },         // asli tanpa cermin
+    { mirror: wrongAxis },    // cermin sumbu salah
+    { mirror: null },         // duplikat (akan difilter)
+    { mirror: 'rot180' }      // kita render sebagai "h lalu v" (≈ rotasi 180°)
+  ];
+  // Render rotasi 180 sebagai mirror bertumpuk
+  const renderFull = st => {
+    if (st.mirror === 'rot180') {
+      // mirror h lalu v = rotasi 180
+      return _svg(`<g transform="translate(100,100) scale(-1,-1)">${_asymSvg(kind, null).replace(/^<svg[^>]*>|<\/svg>$/g, '')}</g>`);
+    }
+    return _asymSvg(kind, st.mirror);
+  };
+  _pushSoal({
+    type: 'cermin',
+    frames: [renderFull({ mirror: null }), renderFull({ mirror: axis })],
+    correct,
+    distractors: distractorStates,
+    render: renderFull,
+    explanation: axis === 'h'
+      ? `Pola: gambar dicerminkan terhadap sumbu vertikal (kiri-kanan). Gambar berikutnya adalah cermin kiri-kanan dari gambar kedua.`
+      : `Pola: gambar dicerminkan terhadap sumbu horizontal (atas-bawah). Gambar berikutnya adalah cermin atas-bawah dari gambar kedua.`,
+    formula: `Refleksi: (x,y) → (−x,y) untuk sumbu vertikal; (x,y) → (x,−y) untuk sumbu horizontal`
+  });
+}
+
+/* ============================================================
+   Tipe 8: Gabungan bangun (union / kombinasi) (50 soal) — BARU
+   Gambar berikutnya = gabungan dari dua gambar sebelumnya.
+   ============================================================ */
+for (let i = 0; i < 50; i++) {
+  const kindA = ['circle', 'square', 'triangle'][i % 3];
+  const kindB = ['diamond', 'hexagon', 'pentagon'][Math.floor(i / 3) % 3];
+  const kindC = ['triangle', 'circle', 'square'][Math.floor(i / 9) % 3];
+  const cxA = 35, cyA = 40, rA = 20;
+  const cxB = 65, cyB = 60, rB = 20;
+  const cxC = 65, cyC = 40, rC = 20;
+
+  // frame 1: A saja
+  // frame 2: B saja
+  // correct: A + B digabung
+  const renderState = st => {
+    let inner = '';
+    if (st.includes('A')) inner += _shape(kindA, cxA, cyA, rA, '#fff');
+    if (st.includes('B')) inner += _shape(kindB, cxB, cyB, rB, '#fff');
+    if (st.includes('C')) inner += _shape(kindC, cxC, cyC, rC, '#fff');
+    return _svg(inner);
+  };
+
+  const correct = ['A', 'B'];
+  _pushSoal({
+    type: 'gabungan',
+    frames: [['A'], ['B']],
+    correct,
+    distractors: [
+      ['A', 'C'],
+      ['B', 'C'],
+      ['A', 'B', 'C'],
+      ['A'],
+      ['B'],
+      []
+    ],
+    render: renderState,
+    explanation: `Gambar ketiga adalah gabungan dari gambar pertama dan gambar kedua (kedua bangun ditumpuk).`,
+    formula: `Gabungan: state3 = state1 ∪ state2`
+  });
+}
+
+/* ============================================================
+   Tipe 9: Warna bergantian / berputar (50 soal) — BARU
+   3 bentuk sama; warna isi bergilir pola 3-warna.
+   ============================================================ */
+const _warnaPool = ['#fff', '#888', '#222'];
+const _warnaNama = ['putih', 'abu-abu', 'hitam'];
+for (let i = 0; i < 50; i++) {
+  const kind = ['circle', 'square', 'triangle'][i % 3];
+  const period = 3;
+  const start = i % 3;
+  const shapeR = 30;
+  const render = st => _svg(
+    _shape(kind, 50, 50, shapeR, _warnaPool[st.f])
+  );
+  const at = t => ({ f: (start + t) % period });
+  const c3 = at(3);
+  _pushSoal({
+    type: 'warna-putar',
+    frames: [at(0), at(1), at(2)],
+    correct: c3,
+    distractors: [
+      at(2), at(4), at(1),
+      { f: (c3.f + 1) % 3 },
+      { f: (c3.f + 2) % 3 }
+    ],
+    render,
+    explanation: `Warna isi bangun bergilir dengan pola 3: ${_warnaNama[at(0).f]} → ${_warnaNama[at(1).f]} → ${_warnaNama[at(2).f]} → ${_warnaNama[c3.f]}.`,
+    formula: `Warna: wn = (w0 + n) mod 3`
+  });
+}
+
+/* ============================================================
+   Tipe 10: Jumlah sisi bangun bertambah + rotasi (50 soal) — BARU
+   Gabungan dua aturan: sisi +1 dan rotasi sudut tetap.
+   ============================================================ */
+for (let i = 0; i < 50; i++) {
+  const s0 = 3 + (i % 3);
+  const rot0 = [0, 30, 60, 90][Math.floor(i / 3) % 4];
+  const dRot = [15, 30, 45, 60][Math.floor(i / 12) % 4];
+  const at = t => ({ n: s0 + t, rot: (rot0 + t * dRot) % 360 });
+  const render = st => _svg(
+    `<g transform="rotate(${st.rot} 50 50)">` +
+    `<polygon points="${_pts(st.n, 50, 50, 32)}" fill="#fff" stroke="${_INK}" stroke-width="3"/>` +
+    `</g>`
+  );
+  const c3 = at(3);
+  _pushSoal({
+    type: 'sisi-rotasi',
+    frames: [at(0), at(1), at(2)],
+    correct: c3,
+    distractors: [
+      at(2),
+      { n: c3.n, rot: (c3.rot + 180) % 360 },
+      { n: c3.n - 1, rot: c3.rot },
+      { n: c3.n + 1, rot: c3.rot },
+      { n: c3.n, rot: (c3.rot + dRot) % 360 }
+    ],
+    render,
+    explanation: `Jumlah sisi bertambah 1 tiap gambar (${s0} → ${s0 + 3}) dan bangun berputar ${dRot}° tiap langkah. Berikutnya: ${c3.n} sisi, rotasi ${c3.rot}°.`,
+    formula: `Sisi: Un = U1 + (n−1); rotasi: θn = θ0 + n·Δθ`
   });
 }
 
